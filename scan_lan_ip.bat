@@ -2,18 +2,19 @@
 setlocal enabledelayedexpansion
 chcp 65001 >nul
 
-:: --- 1. COLLECTING SUBNETS ---
 set "count=0"
 set "keys="
+
 echo.
-echo  Searching for available networks...
+echo  Available networks:
 echo.
 
-for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /R "IPv4"') do (
-    set "ip_raw=%%a"
-    set "ip_raw=!ip_raw: =!"
-    for /f "tokens=1-3 delims=." %%b in ("!ip_raw!") do (
-        set "sub=%%b.%%c.%%d"
+for /f "tokens=1,2 delims=|" %%a in ('powershell -NoProfile -Command "Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.InterfaceAlias -notlike '*Loopback*' } | ForEach-Object { '{0}|{1}' -f $_.InterfaceAlias, $_.IPAddress }"') do (
+    set "if_name=%%a"
+    set "ip_raw=%%b"
+    
+    for /f "tokens=1-3 delims=." %%c in ("!ip_raw!") do (
+        set "sub=%%c.%%d.%%e"
         
         set "exists=0"
         for /l %%x in (1,1,!count!) do (
@@ -24,18 +25,17 @@ for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /R "IPv4"') do (
             set /a count+=1
             set "net_!count!=!sub!"
             set "keys=!keys!!count!"
-            echo  [!count!] !sub!.0/24
+            echo  [!count!] !if_name! [!sub!.0/24]
         )
     )
 )
 
 if !count! EQU 0 (
-    echo [!] No IPv4 networks found.
+    echo [!] No active IPv4 networks found.
     pause
     exit /b
 )
 
-:: --- 2. INSTANT CHOICE ---
 echo.
 echo  Press the number of the network to scan...
 choice /c !keys! /n >nul
