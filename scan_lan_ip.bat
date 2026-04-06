@@ -3,10 +3,10 @@ setlocal enabledelayedexpansion
 chcp 65001 >nul
 
 set "subnet="
-for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /R "IPv4"') do (
-    for /f "tokens=1-3 delims=." %%b in ("%%a") do (
-        set "b_trim=%%b"
-        set "subnet=!b_trim:~1!.%%c.%%d"
+for /f "tokens=4" %%a in ('route print ^| findstr "\<0.0.0.0\>.*\<0.0.0.0\>"') do (
+    set "act_ip=%%a"
+    for /f "tokens=1-3 delims=." %%b in ("!act_ip!") do (
+        set "subnet=%%b.%%c.%%d"
     )
 )
 
