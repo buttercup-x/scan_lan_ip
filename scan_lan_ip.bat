@@ -13,7 +13,7 @@ for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /R "IPv4"') do (
 if "!subnet!"=="" exit /b
 
 echo.
-echo  --- СКАНИРОВАНИЕ СЕТИ: !subnet!.0/24 ---
+echo  --- Scan lan: !subnet!.0/24 ---
 echo  --- ПОЖАЛУЙСТА ПОДОЖДИТЕ... ---
 echo.
 
