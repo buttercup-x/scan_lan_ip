@@ -3,11 +3,25 @@ setlocal enabledelayedexpansion
 chcp 65001 >nul
 
 set "subnet="
-for /f "tokens=4" %%a in ('route print ^| findstr "\<0.0.0.0\>.*\<0.0.0.0\>"') do (
+for /f "tokens=*" %%a in ('powershell -NoProfile -Command "(Get-NetRoute -DestinationPrefix '0.0.0.0/0' | Sort-Object RouteMetric | Select-Object -First 1 | Get-NetIPAddress).IPAddress"') do (
     set "act_ip=%%a"
     for /f "tokens=1-3 delims=." %%b in ("!act_ip!") do (
         set "subnet=%%b.%%c.%%d"
     )
+)
+
+if "!subnet!"=="" (
+    for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /R "IPv4"') do (
+        set "temp_ip=%%a"
+        set "temp_ip=!temp_ip: =!"
+        for /f "tokens=1-3 delims=." %%b in ("!temp_ip!") do set "subnet=%%b.%%c.%%d"
+    )
+)
+
+if "!subnet!"=="" (
+    echo [!] Network not found.
+    pause
+    exit /b
 )
 
 if "!subnet!"=="" exit /b
