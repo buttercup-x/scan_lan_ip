@@ -37,8 +37,12 @@ if !count! EQU 0 (
 
 :: --- 2. INSTANT CHOICE ---
 echo.
-echo  Select network number [!keys!]:
-:: Choice waits for a single key press from the !keys! string
+set "display_keys="
+for /l %%x in (1,1,!count!) do (
+    if %%x==1 (set "display_keys=%%x") else (set "display_keys=!display_keys!, %%x")
+)
+
+echo  Select network number (!display_keys!):
 choice /c !keys! /n >nul
 set "choice_idx=%errorlevel%"
 
