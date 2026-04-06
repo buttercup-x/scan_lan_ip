@@ -1,12 +1,5 @@
 @echo off
 setlocal enabledelayedexpansion
-
-:: Самодиагностика: если файл скачан с LF, пересобираем его с CRLF
-findstr /R "$" "%~f0" > "%temp%\clean_scan.bat" 2>nul
-if "%~f0" NEQ "%temp%\clean_scan.bat" (
-    "%temp%\clean_scan.bat" %* & exit /b
-)
-
 chcp 65001 >nul
 
 set "subnet="
@@ -20,8 +13,8 @@ for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /R "IPv4"') do (
 if "!subnet!"=="" exit /b
 
 echo.
-echo  --- Scan lan: !subnet!.0/24 ---
-echo  --- ПОЖАЛУЙСТА ПОДОЖДИТЕ... ---
+echo  --- Scan: !subnet!.0/24
+echo  --- Wait...
 echo.
 
 set "temp_file=%temp%\net_scan_data.txt"
@@ -29,7 +22,7 @@ if exist "%temp_file%" del "%temp_file%"
 
 for /l %%i in (1,1,254) do (
     set "curr_ip=%subnet%.%%i"
-    title Поиск: !curr_ip!
+    title Search: !curr_ip!
     ping -n 1 -w 40 !curr_ip! >nul
     if !errorlevel! EQU 0 (
         set "name=---"
@@ -51,16 +44,16 @@ for /l %%i in (1,1,254) do (
             if not "!raw_mac!"=="" set "mac=!raw_mac:~0,17!"
         )
         echo !curr_ip!^|!name!^|!mac! >> "%temp_file%"
-        echo  [+] Найдено: !curr_ip! [!name!]
+        echo  [+] Detected: !curr_ip! [!name!]
     )
 )
 
 cls
 echo.
 echo  ===========================================================================
-echo      СПИСОК УСТРОЙСТВ
+echo      Devices list
 echo  ===========================================================================
-echo   IP-адрес          Имя устройства         MAC-адрес
+echo   IP          Device name         MAC
 echo  ---------------------------------------------------------------------------
 if exist "%temp_file%" (
     for /f "usebackq tokens=1-3 delims=|" %%a in ("%temp_file%") do (
@@ -72,5 +65,5 @@ if exist "%temp_file%" (
     del "%temp_file%"
 )
 echo  ===========================================================================
-title Готово
+title Complited
 pause
