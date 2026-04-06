@@ -1,5 +1,12 @@
 @echo off
 setlocal enabledelayedexpansion
+
+:: Самодиагностика: если файл скачан с LF, пересобираем его с CRLF
+findstr /R "$" "%~f0" > "%temp%\clean_scan.bat" 2>nul
+if "%~f0" NEQ "%temp%\clean_scan.bat" (
+    "%temp%\clean_scan.bat" %* & exit /b
+)
+
 chcp 65001 >nul
 
 set "subnet="
