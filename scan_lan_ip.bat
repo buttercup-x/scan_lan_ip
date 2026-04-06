@@ -2,29 +2,48 @@
 setlocal enabledelayedexpansion
 chcp 65001 >nul
 
-set "subnet="
-for /f "tokens=*" %%a in ('powershell -NoProfile -Command "(Get-NetRoute -DestinationPrefix '0.0.0.0/0' | Sort-Object RouteMetric | Select-Object -First 1 | Get-NetIPAddress).IPAddress"') do (
-    set "act_ip=%%a"
-    for /f "tokens=1-3 delims=." %%b in ("!act_ip!") do (
-        set "subnet=%%b.%%c.%%d"
+:: --- 1. COLLECTING SUBNETS ---
+set "count=0"
+set "keys="
+echo.
+echo  Searching for available networks...
+echo.
+
+for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /R "IPv4"') do (
+    set "ip_raw=%%a"
+    set "ip_raw=!ip_raw: =!"
+    for /f "tokens=1-3 delims=." %%b in ("!ip_raw!") do (
+        set "sub=%%b.%%c.%%d"
+        
+        set "exists=0"
+        for /l %%x in (1,1,!count!) do (
+            if "!sub!"=="!net_%%x!" set "exists=1"
+        )
+        
+        if "!exists!"=="0" (
+            set /a count+=1
+            set "net_!count!=!sub!"
+            set "keys=!keys!!count!"
+            echo  [!count!] !sub!.0/24
+        )
     )
 )
 
-if "!subnet!"=="" (
-    for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /R "IPv4"') do (
-        set "temp_ip=%%a"
-        set "temp_ip=!temp_ip: =!"
-        for /f "tokens=1-3 delims=." %%b in ("!temp_ip!") do set "subnet=%%b.%%c.%%d"
-    )
-)
-
-if "!subnet!"=="" (
-    echo [!] Network not found.
+if !count! EQU 0 (
+    echo [!] No IPv4 networks found.
     pause
     exit /b
 )
 
-if "!subnet!"=="" exit /b
+:: --- 2. INSTANT CHOICE ---
+echo.
+echo  Select network number [!keys!]:
+:: Choice waits for a single key press from the !keys! string
+choice /c !keys! /n >nul
+set "choice_idx=%errorlevel%"
+
+:: Assign selected subnet
+set "subnet=!net_%choice_idx%!"
 
 echo.
 echo  --- Scan: !subnet!.0/24
