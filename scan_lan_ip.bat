@@ -37,16 +37,10 @@ if !count! EQU 0 (
 
 :: --- 2. INSTANT CHOICE ---
 echo.
-set "display_keys="
-for /l %%x in (1,1,!count!) do (
-    if %%x==1 (set "display_keys=%%x") else (set "display_keys=!display_keys!, %%x")
-)
-
-echo  Select network number (!display_keys!):
+echo  Press the number of the network to scan...
 choice /c !keys! /n >nul
 set "choice_idx=%errorlevel%"
 
-:: Assign selected subnet
 set "subnet=!net_%choice_idx%!"
 
 echo.
