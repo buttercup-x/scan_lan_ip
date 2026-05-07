@@ -74,8 +74,8 @@ for /l %%i in (1,1,254) do (
             if !errorlevel! EQU 0 (set "raw_mac=!m1!") else (set "raw_mac=!m2!")
             if not "!raw_mac!"=="" set "mac=!raw_mac:~0,17!"
         )
-        echo !curr_ip!^|!name!^|!mac! >> "%temp_file%"
-        echo  [+] Detected: !curr_ip! [!name!]
+        echo !curr_ip!^|!mac!^|!name! >> "%temp_file%"
+        echo  [+] Detected: !curr_ip!  -  MAC: !mac!  -  Name: [!name!]
     )
 )
 
